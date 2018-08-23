@@ -1,0 +1,204 @@
+#include <bits/stdc++.h>
+#include <algorithm>
+#include <cstdio>
+#include <cstdlib>
+#include <iterator>
+#include <utility>
+#include <vector>
+#include <sys/time.h>
+
+using namespace std;
+
+
+class Graph
+{
+public:
+    int V;    // No. of vertices
+    int k; //mitmap  length 
+	int array_len;  //the lenth of my_array
+	int vis_cur;
+    list<int> *t_adj;
+ 	int *reach_size;   
+	int **bit_reach;   
+	int *visit;
+	int **A;
+	int *DFN;
+	int *LOW;
+	int *stack;
+	int *heads;
+	int temp;
+	int *temp_array; 
+	int cnt;
+	int tot;
+	int index; 
+	int *unumb;                                              
+
+	int Est_UV;//No.unreach m_nod
+	double Plity;
+	vector<int> m_node;
+	vector<int> *adj;
+	vector<int> *adj1;
+	vector<int> my_array;
+    vector<int> indegree;// Vector to store indegree of vertices  
+    vector<int> indegree1;
+    vector<int> t_indegree;
+	Graph();
+    void init(int V);
+    void addEdge(int v, int w);
+    void beforeMycal();
+    void tarjan(int x);
+    void Generate_DAG_txt();
+};
+
+Graph::Graph(){
+}
+
+void Graph::init(int V)
+{
+    this->V = V;
+    this->array_len = 0;
+    this->vis_cur = 0;
+    this->cnt = 0;
+	this->tot = 0;
+	this->index = 0; 
+	this->temp = 0;
+//    array_len = 0;
+//    k =  (V-1) / BITPERWORD + 1; 
+    adj = new vector<int>[V];
+//    m_node = new int[V]();
+	m_node.resize(V);
+
+    visit = new int[V]();
+    stack = new int[V]();
+    temp_array = new int[V]();
+    DFN = new int[V]();
+    LOW = new int[V]();
+    
+
+//		bit_reach[i] = new int[k];
+//		for (int j = 0; j < k; j++){
+//			bit_reach[i][j] = 0;
+//		}
+//	}
+        
+}
+
+
+void Graph::tarjan(int x)
+ {
+ 	int  maxCount= adj[x].size(),i; 
+ 	maxCount--; 
+     DFN[x]=LOW[x]=++tot;
+     stack[++index]=x;
+     visit[x]=1;
+    for (; maxCount >= 0; maxCount--)
+     {
+     	 i = adj[x][maxCount]; 
+         if(!DFN[i]) {
+            tarjan(i);
+             LOW[x]=min(LOW[x],LOW[i]);
+        }
+        else if(visit[i]){  
+             LOW[x]=min(LOW[x],DFN[i]);
+         }
+     }
+     if(LOW[x]==DFN[x]) 
+    {
+         do{
+   //         printf("%d ",stack[index]);
+        	temp_array[stack[index]] = temp;
+             visit[stack[index]]=0;
+             index--;
+         }while(x!=stack[index+1]);
+      //   printf("\n");
+         temp++;
+     }
+     return ;
+ }
+ 
+void Graph::addEdge(int v, int w)
+{
+    adj[v].push_back(w); // Add w to v's list.
+  //  adj1[v].push_back(w);
+    // increasing inner degree of w by 1
+  //  indegree[w]++;
+  //  indegree1[w]++;
+}
+
+void Graph::Generate_DAG_txt(){
+	FILE *fp = fopen("shencheng.txt","w+"); 
+
+	fprintf(fp,"%d\n" ,temp);
+	cout<<"node:"<<temp<<endl;
+	for(int i=1;i < V;i++){
+		int  maxCount= adj[i].size();
+		maxCount--;
+		for (; maxCount >= 0; maxCount--){
+			int j = adj[i][maxCount];
+			int t_i = temp_array[i];
+			int t_j = temp_array[j];
+			if(t_i!=t_j){
+				fprintf(fp,"%d %d\n" ,t_i, t_j);	
+			} 
+		}
+	}
+	fclose(fp);
+}
+
+void read_graph(Graph *g){
+  timeval start_at, end_at;
+  gettimeofday(&start_at, 0);
+  FILE *file = fopen("yuanshi.txt", "r");
+  int n;
+  fscanf(file, "%d", &n);
+  cout<<"node:"<<n<<endl;
+  g->init(n+1);
+  int u, v;
+  fgetc(file);
+  while (!feof(file)){ 
+	fscanf(file, "%d%d",&u, &v);
+	g->addEdge(u, v); 
+  }
+  fclose(file);
+  gettimeofday(&end_at, 0);
+  printf("read time(graph): %.8fs\n",
+	     end_at.tv_sec - start_at.tv_sec +
+	         double(end_at.tv_usec - start_at.tv_usec) / 1000000);
+}
+
+
+
+
+
+
+int main()
+{
+  	Graph *g = new Graph();
+  	
+    read_graph(g);
+	for(int i=1;i<=g->V-1;i++){
+		if(!g->DFN[i]){
+	//		printf("***%d\n",i);
+			g->tarjan(i);
+		}
+	}
+/*	
+	for(int i=1;i<=g->V-1;i++){
+		cout<<g->temp_array[i]<<" ";
+	}
+*/	
+	g->Generate_DAG_txt();
+//	g->beforeMycal();
+    
+ //   g->run_queries();
+  //  g->write_results();
+    
+    return 0;
+}
+
+
+
+
+
+
+
